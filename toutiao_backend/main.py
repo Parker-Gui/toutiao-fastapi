@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routers import news, users
+from routers import favorite, news, users
 from utils.exception_handlers import register_exception_handlers
 
 app = FastAPI()
@@ -25,6 +25,6 @@ async def root():
 # 挂载路由
 app.include_router(news.router)
 app.include_router(users.router)
+app.include_router(favorite.router)
 
-
-# 运行命令 uv run uvicorn main:app --reload 
+# 运行命令 uv run uvicorn main:app --reload

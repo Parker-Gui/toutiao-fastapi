@@ -3,7 +3,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from config.db_config import get_db
 from crud import users
-from schemas.users import UserAuthResponse, UserInfoResponse, UserRequest
+from models.users import User
+from schemas.users import (
+    UserAuthResponse,
+    UserChangePasswordRequest,
+    UserInfoResponse,
+    UserRequest,
+    UserUpdateRequest,
+)
+from utils.auth import get_current_user
 from utils.response import success_response
 
 router = APIRouter(prefix="/api/user", tags=["users"])
@@ -54,5 +62,40 @@ async def login(user_data: UserRequest, db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/info")
-async def get_user_info():
-    return success_response(message="获取用户信息成功", data={})
+async def get_user_info(user: User = Depends(get_current_user)):
+    # 获取用户信息逻辑： 1.验证token是否有效 2.获取用户信息 3.响应结果
+    return success_response(
+        message="获取用户信息成功", data=UserInfoResponse.model_validate(user)
+    )
+
+
+# 修改用户信息：验证Token-> 更新（用户输入数据 -> put提交 -> 请求体参数 -> 定义Pydantic模型） -> 响应结果
+# 参数：用户输入的 + 验证Token + db
+@router.put("/update")
+async def update_user_info(
+    user_data: UserUpdateRequest,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    user = await users.update_user(db, user.username, user_data)
+    return success_response(
+        message="更新用户信息成功", data=UserInfoResponse.model_validate(user)
+    )
+
+
+# 修改用户密码
+@router.put("/password")
+async def change_password(
+    password_data: UserChangePasswordRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    res_change_pwd = await users.change_password(
+        db, user, password_data.old_password, password_data.new_password
+    )
+    if not res_change_pwd:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="修改密码失败，请稍后再试",
+        )
+    return success_response(message="修改密码成功")
