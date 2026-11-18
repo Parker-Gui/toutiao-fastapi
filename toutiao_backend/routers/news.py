@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from config.db_config import get_db
 from crud import news
+from schemas.base import NewsItemBase
 
 router = APIRouter(prefix="/api/news", tags=["news"])
 
@@ -40,10 +41,15 @@ async def get_news_list(
     news_list = await news.get_news_list(db, category_id, offset, page_size)
     total = await news.get_news_count(db, category_id)
     has_more = (offset + len(news_list)) < total
+    # 统一成前端约定的驼峰字段（categoryId / publishTime），与详情接口保持一致
+    items = [
+        NewsItemBase.model_validate(item).model_dump(by_alias=True)
+        for item in news_list
+    ]
     return {
         "code": 200,
         "message": "success",
-        "data": {"list": news_list, "total": total, "hasMore": has_more},
+        "data": {"list": items, "total": total, "hasMore": has_more},
     }
 
 

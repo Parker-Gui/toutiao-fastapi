@@ -21,7 +21,7 @@ async def get_user_by_username(db: AsyncSession, username: str):
 async def create_user(db: AsyncSession, user_data: UserRequest):
     # 先给密码hash加密，再add
     hashed_password = security.get_hash_password(user_data.password)
-    user = User(username=user_data.username, password=hashed_password)
+    user = User(username=user_data.username, password=hashed_password, phone=user_data.phone)
     db.add(user)
     await db.commit()
     await db.refresh(user)  # 从数据库读回最新的user

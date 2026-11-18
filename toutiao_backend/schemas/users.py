@@ -4,6 +4,7 @@ from pydantic import BaseModel, ConfigDict, Field
 class UserRequest(BaseModel):
     username: str = Field(..., min_length=3, max_length=20)
     password: str = Field(..., min_length=6, max_length=20)
+    phone: str | None = Field(None, min_length=11, max_length=11, description="手机号")
 
 
 # user_info对应的类：基础类 + Info 类（id、用户名等）
@@ -21,6 +22,7 @@ class UserInfoBase(BaseModel):
 class UserInfoResponse(UserInfoBase):
     id: int
     username: str
+    phone: str | None = None
 
     model_config = ConfigDict(
         from_attributes=True,  # 允许从ORM对象中读取数据

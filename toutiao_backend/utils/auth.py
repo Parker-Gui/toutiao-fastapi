@@ -11,7 +11,13 @@ async def get_current_user(
     authorization: str = Header(..., alias="Authorization"),
 ):
     # 1.验证token是否有效 2.获取用户信息 3.响应结果
-    token = authorization.split(" ")[1]  # Bearer token
+    # 兼容两种写法：标准的 "Bearer <token>" 和直接传裸 token
+    parts = authorization.split()
+    token = parts[-1] if parts else ""
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="缺少 Token"
+        )
     user = await users.get_user_by_token(db, token)
     if not user:
         raise HTTPException(
