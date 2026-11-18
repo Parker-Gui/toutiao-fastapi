@@ -37,6 +37,10 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# ---------- README 生成中间产物 ----------
+assets/*.html
+assets/*.png
+
 # ---------- 日志 ----------
 *.log
 logs/
@@ -53,3 +57,4 @@ logs/
 Thumbs.db
 Desktop.ini
 .DS_Store
+dump.rdb
